@@ -10,7 +10,7 @@ import { Spinner } from '@chakra-ui/react'
 // Constants
 const TWITTER_HANDLE = '_buildspace';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const OPENSEA_LINK = '';
+const OPENSEA_LINK = 'https://testnets.opensea.io/collection/squarenft-9im74rsp0a';
 const TOTAL_MINT_COUNT = 50;
 const CONTRACT_ADDRESS = "0x16B4C9b6fC8ed079783Df4cc0a4D059E3743F146";
 
@@ -185,6 +185,14 @@ const App = () => {
     </ChakraProvider>
   );
 
+  const renderOpenseaLink = () => (
+    <ChakraProvider>
+    <form action={OPENSEA_LINK} method="get" target="_blank">
+         <button className="cta-button connect-wallet-button" type="submit">View Collection</button>
+      </form>
+    </ChakraProvider>
+  );
+
   return (
     <div className="App">
       <div className="container">
@@ -194,6 +202,9 @@ const App = () => {
             Each unique. Each beautiful. Discover your NFT today.
           </p>
           {currentAccount === "" ? renderNotConnectedContainer() : renderMintUI()}
+          <p>
+          {renderOpenseaLink()}
+          </p>
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
