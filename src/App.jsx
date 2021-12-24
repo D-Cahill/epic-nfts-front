@@ -3,6 +3,8 @@ import { ethers } from "ethers";
 import './styles/App.css';
 import twitterLogo from './assets/twitter-logo.svg';
 import myEpicNft from './utils/MyEpicNFT.json';
+import { ChakraProvider } from '@chakra-ui/react'
+import { Spinner } from '@chakra-ui/react'
 
 
 // Constants
@@ -18,6 +20,7 @@ const App = () => {
   * Just a state variable we use to store our user's public wallet.
   */
   const [currentAccount, setCurrentAccount] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const checkIfWalletIsConnected = async () => {
     /*
@@ -36,6 +39,18 @@ const App = () => {
     * Check if we're authorized to access the user's wallet
     */
     const accounts = await ethereum.request({ method: 'eth_accounts' });
+
+    /*
+    * Check if right network
+    */
+    let chainId = await ethereum.request({ method: 'eth_chainId' });
+    console.log("Connected to chain " + chainId);
+
+    // String, hex code of the chainId of the Rinkebey test network
+    const rinkebyChainId = "0x4"; 
+    if (chainId !== rinkebyChainId) {
+	    alert("You are not connected to the Rinkeby Test Network!");
+    }
 
     /*
     * User can have multiple authorized accounts, we grab the first one if its there!
@@ -127,11 +142,11 @@ const App = () => {
 
       console.log("Going to pop wallet now to pay gas...")
       let nftTxn = await connectedContract.makeAnEpicNFT();
-
       console.log("Mining...please wait.")
+      setIsLoading(true);
       await nftTxn.wait();
-      
       console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`);
+      setIsLoading(false);
 
     } else {
       console.log("Ethereum object doesn't exist!");
@@ -156,9 +171,18 @@ const App = () => {
   );
 
   const renderMintUI = () => (
+    <ChakraProvider>
+    {isLoading ? <Spinner 
+    thickness='4px'
+    speed='0.65s'
+    emptyColor='gray.200'
+    color='blue.500'
+    size='xl'/> :
     <button onClick={askContractToMintNft} className="cta-button connect-wallet-button">
       Mint NFT
     </button>
+    }
+    </ChakraProvider>
   );
 
   return (
