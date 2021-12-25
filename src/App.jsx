@@ -11,8 +11,8 @@ import { Spinner } from '@chakra-ui/react'
 const TWITTER_HANDLE = '_buildspace';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = 'https://testnets.opensea.io/collection/squarenft-9im74rsp0a';
-const TOTAL_MINT_COUNT = 50;
-const CONTRACT_ADDRESS = "0x16B4C9b6fC8ed079783Df4cc0a4D059E3743F146";
+const MAX_MINTS = 50;
+const CONTRACT_ADDRESS = "0x78dA820B66a71dBaa1d5dA39a61C2ab9cdfd0AdC";
 
 const App = () => {
 
@@ -21,6 +21,9 @@ const App = () => {
   */
   const [currentAccount, setCurrentAccount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  let [amountMinted, setAmountMinted] = useState("");
+  let [soldOut, setSoldOut] = useState(false);
+  
 
   const checkIfWalletIsConnected = async () => {
     /*
@@ -156,11 +159,29 @@ const App = () => {
   }
 }
 
+const getTotalMints = async () => {
+  const provider = new ethers.providers.Web3Provider(ethereum);
+  const signer = provider.getSigner();
+  const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
+
+  let count = await connectedContract.getMintedTokenCount();
+  setAmountMinted(count.toNumber());
+  if (amountMinted == MAX_MINTS){
+    setSoldOut(true);
+    console.log("Sold out")
+  }
+  else {
+    console.log("Still in stock")
+    setSoldOut(false);
+  }
+}
+
   /*
   * This runs our function when the page loads.
   */
   useEffect(() => {
     checkIfWalletIsConnected();
+    getTotalMints();
   }, [])
 
   // Render Methods
@@ -193,6 +214,21 @@ const App = () => {
     </ChakraProvider>
   );
 
+  const renderSoldOut = () => (
+    <ChakraProvider>
+    {isLoading ? <Spinner 
+    thickness='4px'
+    speed='0.65s'
+    emptyColor='gray.200'
+    color='blue.500'
+    size='xl'/> :
+    <button onClick={askContractToMintNft} className="cta-button connect-wallet-button">
+      soldOUt
+    </button>
+    }
+    </ChakraProvider>
+  );
+
   return (
     <div className="App">
       <div className="container">
@@ -201,10 +237,19 @@ const App = () => {
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
-          {currentAccount === "" ? renderNotConnectedContainer() : renderMintUI()}
-          <p>
-          {renderOpenseaLink()}
+
+          <p className="sub-text">
+            Total Mints:
           </p>
+          <p className="sub-text">
+            {amountMinted} / {MAX_MINTS}
+          </p>
+  
+          {soldOut === true ? renderSoldOut() : renderMintUI()}
+          {currentAccount === "" ? renderNotConnectedContainer() : renderMintUI()}
+          
+          {renderOpenseaLink()}
+          
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
